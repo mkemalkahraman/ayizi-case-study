@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Ayİzi Case Study</title>
+<meta name="description" content="A private cycle tracker built on Google Apps Script and Google Sheets: one-tap logging, a PIN, private reminders and no outside services. Case study with invented data and no source code.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Ayİzi Case Study">
+<meta property="og:description" content="A private cycle tracker built on Google Apps Script and Google Sheets: one-tap logging, a PIN, private reminders and no outside services. Case study with invented data and no source code.">
+<meta property="og:url" content="https://mkemalkahraman.github.io/ayizi-case-study/">
+<meta property="og:image" content="https://mkemalkahraman.github.io/ayizi-case-study/img/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Three phone screens of the Ayİzi app: a calm day with a countdown, a period day with one-tap logging and the cycle summary">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://mkemalkahraman.github.io/ayizi-case-study/img/og.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Nunito+Sans:wght@400;600;700&display=swap">
+<style>
+/* Layout concept: a warm journal page. Text on the left, phones on the right, rose accent, rounded cards. */
+:root{
+  --bg:#fbf3f2; --surface:#ffffff; --ink:#2b2022; --muted:#6a585c; --line:#ecdcdd;
+  --accent:#a14a61; --accent-soft:#f6e1e5; --sage:#4d7458; --sage-soft:#e1eee3; --phone:#3b2a2e;
+  --f-display:"Fraunces",Georgia,"Times New Roman",serif;
+  --f-body:"Nunito Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#261e20; --surface:#32282b; --ink:#f4e9ea; --muted:#c6b0b4; --line:#47393d;
+  --accent:#eba6b8; --accent-soft:#433036; --sage:#a9cdb2; --sage-soft:#2f3f34; --phone:#150f11; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#261e20; --surface:#32282b; --ink:#f4e9ea; --muted:#c6b0b4; --line:#47393d;
+  --accent:#eba6b8; --accent-soft:#433036; --sage:#a9cdb2; --sage-soft:#2f3f34; --phone:#150f11; color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.65;-webkit-text-size-adjust:100%}
+img{max-width:100%;height:auto}
+.wrap{max-width:1040px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+section{padding-block:68px;border-top:1px solid var(--line)}
+section:first-of-type{border-top:0}
+.label{font-size:12.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 12px}
+h1,h2,h3{font-family:var(--f-display);line-height:1.1;margin:0 0 16px;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(46px,8vw,88px);font-weight:700}
+h2{font-size:clamp(28px,4.4vw,42px);font-weight:700}
+h3{font-size:21px;font-weight:600}
+p{margin:0 0 14px;max-width:62ch}
+.lead{font-size:clamp(19px,2.4vw,23px);color:var(--muted);max-width:42ch}
+.note{font-size:14.5px;color:var(--muted);max-width:60ch}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 0;padding:0;list-style:none}
+.chips li{font-size:14px;font-weight:600;border:1px solid var(--line);background:var(--surface);padding:6px 14px;border-radius:999px}
+.hero-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:clamp(24px,4vw,40px);align-items:center}
+.hero-grid>*{min-width:0}
+.phones{display:flex;justify-content:center;gap:clamp(10px,2.4vw,22px)}
+.phone{margin:0;width:min(31%,230px)}
+.phone.big{width:min(40%,260px)}
+.phone img{display:block;width:100%;height:auto;border-radius:28px;border:7px solid var(--phone);background:var(--surface);box-shadow:0 18px 40px -20px rgba(43,32,34,.45)}
+.phone figcaption{font-size:13px;color:var(--muted);margin-top:10px;text-align:center}
+@media(prefers-reduced-motion:no-preference){.phone{transition:transform .35s ease}.phone:hover{transform:translateY(-4px)}}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);background:var(--surface);border-radius:18px;overflow:hidden}
+.stats div{padding:22px 20px;border-left:1px solid var(--line);min-width:0}
+.stats div:first-child{border-left:0}
+.stats b{display:block;font-family:var(--f-display);font-size:clamp(30px,4vw,42px);line-height:1.1}
+.stats span{color:var(--muted);font-size:15px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,5vw,64px);align-items:center}
+.row.flip .text{order:2}
+.row .text,.row .shots{min-width:0}
+.row .shots{display:flex;justify-content:center;gap:18px}
+.row .shots .phone{width:min(46%,240px)}
+.row .shots .phone.one{width:min(66%,270px)}
+ul.points{margin:14px 0 0;padding:0;list-style:none;display:grid;gap:8px}
+ul.points li{padding-left:22px;position:relative;max-width:56ch}
+ul.points li::before{content:"";position:absolute;left:0;top:.8em;width:10px;height:3px;border-radius:2px;background:var(--accent)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:16px;margin-top:28px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px;min-width:0}
+.card .label{margin-bottom:8px}
+.card p{font-size:15.5px;color:var(--muted);margin-bottom:0}
+.card p+p{margin-top:12px}
+.card p.lesson{color:var(--ink);font-weight:700}
+.timeline{list-style:none;padding:0;margin:28px 0 0;border-left:2px solid var(--line)}
+.timeline li{padding:0 0 26px 22px;position:relative;max-width:64ch}
+.timeline li::before{content:"";position:absolute;left:-7px;top:9px;width:12px;height:12px;border-radius:50%;background:var(--accent)}
+.timeline b{display:block;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+@media(max-width:760px){
+  .hero-grid,.row{grid-template-columns:1fr}
+  .row.flip .text{order:0}
+  .stats{grid-template-columns:1fr 1fr}
+  .stats div:nth-child(3){border-left:0}
+  .stats div:nth-child(n+3){border-top:1px solid var(--line)}
+  section{padding-block:46px}
+}
+@media(max-width:520px){.phone,.phone.big{width:min(31%,230px)}.phone.big{width:min(38%,230px)}}
+</style>
+</head>
+<body>
+<main class="wrap">
+
+  <section id="top">
+    <div class="hero-grid">
+      <div>
+        <p class="label">Case study · Web app</p>
+        <h1>Ayİzi</h1>
+        <p class="note">("ay" means month, "iz" means trace)</p>
+        <p class="lead">A private cycle tracker for one person. Logging takes one tap, reminders arrive by email, and the data stays in one Google account.</p>
+        <ul class="chips"><li>Google Apps Script</li><li>Google Sheets</li><li>Gmail</li><li>Plain JavaScript</li></ul>
+      </div>
+      <div class="phones">
+        <figure class="phone"><img src="img/sakin.webp" width="780" height="1688" alt="Home screen on a calm day: a cover picture, a countdown ring saying 4 days left and a Started today button"></figure>
+        <figure class="phone big"><img src="img/bugun.webp" width="780" height="1688" alt="Home screen on a period day: day 3 ring, flow and pain buttons and a calendar"></figure>
+        <figure class="phone"><img src="img/ozet.webp" width="780" height="1688" alt="Cycle summary sheet with average cycle length, range, pain and the last four cycles"></figure>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="stats">
+      <div><b>75</b><span>automated tests, all passing</span></div>
+      <div><b>18</b><span>versions, 3.0.0 to 3.7.1</span></div>
+      <div><b>18</b><span>days between the first and the last of them</span></div>
+      <div><b>0</b><span>server calls to outside services</span></div>
+    </div>
+  </section>
+
+  <section>
+    <p class="label">Why I built it</p>
+    <h2>Tracking apps want your data. This one does not</h2>
+    <p>Most cycle apps ask for an account, store health data on someone else's servers and push ads or upsells. I wanted something small for one person, on the phone home screen, where the data sits in a spreadsheet that belongs to her.</p>
+    <p>So it runs on Google Apps Script. It costs nothing, needs no server of my own and keeps everything inside one Google account. The rules I set: ready in one tap, no third parties, and health details never appear where other people can see them.</p>
+  </section>
+
+  <section>
+    <div class="row">
+      <div class="text">
+        <p class="label">Today</p>
+        <h2>One tap, then close the app</h2>
+        <p>The app is opened rarely, so the main card does the job. On a period day it asks two questions with three buttons each: how heavy the flow is and how strong the pain is. One tap saves it to today.</p>
+        <ul class="points">
+          <li>When no period is on, the card shows a countdown to the estimated start and a single Started today button</li>
+          <li>Pain and flow buttons write to today's record without opening a form</li>
+          <li>A wrongly entered date can be fixed later from the list of past cycles</li>
+        </ul>
+        <p class="note" style="margin-top:18px">The app is in Turkish. "Regl sürüyor" = period ongoing. "Hafif / Orta / Yoğun" = light / medium / heavy. "Ağrı" = pain. "Bugün başladı" = started today.</p>
+      </div>
+      <div class="shots">
+        <figure class="phone"><img src="img/bugun.webp" width="780" height="1688" loading="lazy" alt="Period day card with flow and pain buttons"><figcaption>A period day</figcaption></figure>
+        <figure class="phone"><img src="img/sakin.webp" width="780" height="1688" loading="lazy" alt="Calm day card with a countdown to the estimated start"><figcaption>A calm day</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="row flip">
+      <div class="text">
+        <p class="label">Calendar</p>
+        <h2>Estimates, labelled as estimates</h2>
+        <p>The calendar colours logged period days, estimated days and estimated fertile days. Estimates come from the average of the logged cycles, with a margin of a few days written next to them.</p>
+        <ul class="points">
+          <li>Fertile days carry a line next to them: a rough guess, not to be relied on for contraception</li>
+          <li>A "back to today" button appears when you page to another month</li>
+          <li>Every day is at least 44 px tall, so it is easy to hit on a small phone</li>
+        </ul>
+        <p class="note" style="margin-top:18px">"Regl" = period. "Tahmin" = estimate. "Doğurgan" = fertile. "Bugün" = today.</p>
+      </div>
+      <div class="shots"><figure class="phone one"><img src="img/takvim.webp" width="780" height="1688" loading="lazy" alt="Calendar for October with period days in rose, fertile days in green and a note that they are a rough guess"><figcaption>Estimates and a plain warning</figcaption></figure></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="row">
+      <div class="text">
+        <p class="label">Report card</p>
+        <h2>One chart, with the numbers written on it</h2>
+        <p>The cycle report card shows the average cycle length and the last period length. Under it a single chart has one bar per cycle: the bar is the cycle length, the rose part at the bottom is the period.</p>
+        <ul class="points">
+          <li>The value is written above each bar, so no colour has to carry the meaning</li>
+          <li>Tapping a bar shows the details</li>
+          <li>Most frequent complaints appear as small tags under the chart</li>
+        </ul>
+        <p class="note" style="margin-top:18px">"Döngü karnesi" = cycle report card. "Geçmiş turlar" = past cycles. "Şikâyet" = complaint.</p>
+      </div>
+      <div class="shots"><figure class="phone one"><img src="img/karne.webp" width="780" height="1688" loading="lazy" alt="Cycle report card with average cycle 30 days, last period 5 days, a bar chart of four cycles and a list of past cycles"><figcaption>The report card</figcaption></figure></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="row flip">
+      <div class="text">
+        <p class="label">Summary</p>
+        <h2>An answer ready for the doctor's question</h2>
+        <p>At an appointment the questions are always the same: how often does it come, how long does it last, how bad is the pain. The cycle summary answers them on one sheet, calculated on the phone from the records.</p>
+        <ul class="points">
+          <li>Numbers only. The sheet says in writing that it contains no interpretation or diagnosis</li>
+          <li>Sharing is the user's own action, with a screenshot or Safari's print sheet, and a warning says the information goes to whoever receives it</li>
+          <li>Pain and complaints are counted only from finished cycles</li>
+        </ul>
+        <p class="note" style="margin-top:18px">"Döngü özeti" = cycle summary. "Ort. döngü" = average cycle. "Yoğun akışlı gün" = heavy-flow days.</p>
+      </div>
+      <div class="shots">
+        <figure class="phone"><img src="img/ozet.webp" width="780" height="1688" loading="lazy" alt="Cycle summary sheet in the light theme"><figcaption>Light</figcaption></figure>
+        <figure class="phone"><img src="img/ozet-koyu.webp" width="780" height="1688" loading="lazy" alt="The same sheet in the warm dark theme"><figcaption>Evening theme</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="row">
+      <div class="text">
+        <p class="label">Privacy</p>
+        <h2>Locked, and quiet on the lock screen</h2>
+        <p>Opening the link shows only a PIN screen. The PIN lives on the server and never reaches the page. Reminders go out by email, and by default the email says almost nothing.</p>
+        <ul class="points">
+          <li>After the sixth digit the app signs in by itself. Only the number of digits is sent to the page, never the PIN</li>
+          <li>Too many wrong tries lock the screen for a while</li>
+          <li>The default reminder reads "Ayİzi" with a one-line text. Day numbers and complaints appear only if she turns details on</li>
+        </ul>
+        <p class="note" style="margin-top:18px">"PIN'ini gir, devam edelim" = enter your PIN, let's go on. "Gmail ile hatırlat" = remind by Gmail.</p>
+      </div>
+      <div class="shots">
+        <figure class="phone"><img src="img/giris.webp" width="780" height="1688" loading="lazy" alt="PIN screen with a flower mark and one input"><figcaption>The only thing a stranger sees</figcaption></figure>
+        <figure class="phone"><img src="img/ayarlar.webp" width="780" height="1688" loading="lazy" alt="Settings sheet with a Gmail reminder option and a sign-out button"><figcaption>Settings</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="lessons" id="lessons">
+    <p class="label">Lessons from real bugs</p>
+    <h2>What actually went wrong</h2>
+    <div class="cards">
+      <div class="card" id="lesson-paste"><p class="label">Deployment</p><h3>A half-pasted file poured code onto the screen</h3><p>Apps Script has no upload. The page file is pasted into an editor by hand. One paste stopped in the middle, and the live app showed raw JavaScript instead of the screen.</p><p>The fix: the page file now ends with a marker and carries its own version number. If either is missing, the app says it is updating instead of showing code, and a health check reports the half file and any version mismatch.</p><p class="lesson">If a manual step can fail silently, make the failure detectable.</p></div>
+      <div class="card" id="lesson-emoji"><p class="label">Email</p><h3>A flower became question marks</h3><p>The test email arrived in another mail provider with "??????" in the subject. The Gmail service of Apps Script writes four-byte characters such as emoji badly. Turkish letters were fine.</p><p>The fix: subject and plain text are stripped of emoji before sending, and the flower in the HTML part is written as a numeric code that every mail program understands.</p><p class="lesson">Test with the receiver's mail program, not only your own.</p></div>
+      <div class="card" id="lesson-cache"><p class="label">Cache</p><h3>A footer that blamed the wrong file</h3><p>The settings footer said the screen was out of date. It was not. The server had kept a data package written by the previous version, and for up to an hour the new screen met old fields.</p><p>The fix: the version number is part of the cache key, so a new release never reads a package prepared by old code. The footer now also says which of the two files is the old one.</p><p class="lesson">Put the version into every cache key.</p></div>
+      <div class="card" id="lesson-slow"><p class="label">Speed</p><h3>"A bit slow" could not be measured from outside</h3><p>The app felt slow to open, but the real delay inside Apps Script cannot be measured from a laptop. Instead of guessing, I followed the chain of waits in the code: start the data call before the page is drawn, read the settings in one call, skip needless compression.</p><p>To get real numbers from the phone, the settings sheet now shows one line: total open time, time spent on the server and where the data came from. It holds no health data.</p><p class="lesson">When you cannot measure it, build the measurement in.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <p class="label">Under the hood</p>
+    <h2>The parts that are not on screen</h2>
+    <div class="cards">
+      <div class="card"><h3>A free stack</h3><p>One server file and one page file, with Google Sheets as the database, Google's cache for speed and Gmail for reminders. Nothing is paid for, and the server code makes no call to any outside service.</p></div>
+      <div class="card"><h3>Security on the server</h3><p>The PIN is stored on the server. A correct PIN returns a 90-day session key, and the server keeps only its SHA-256 digest, for at most five sessions. Every write is checked on the server, runs under a lock and carries a request id, so a repeated tap never writes twice.</p></div>
+      <div class="card"><h3>No health data in logs</h3><p>The operations log records the action and the result, never flow, pain, complaints or notes. Dates inside error messages are masked. Text written to a cell is neutralised against spreadsheet formula injection.</p></div>
+      <div class="card"><h3>Data stays on the server</h3><p>The phone stores only the session key. A copy of the data on the phone would make opening faster, but a lost phone would then show old data even after the PIN is changed. I chose safety over speed. For the same reason the app never moved to a hosted database.</p></div>
+      <div class="card"><h3>Tests without Google</h3><p>Apps Script does not run locally. 75 tests run in Node against hand-made fakes of the spreadsheet, cache, lock and Gmail services. Calculations on the page sit in one marked block that tests load on their own. A browser script checks sideways overflow and touch-target size at 375 and 390 px, in light and dark.</p></div>
+      <div class="card"><h3>Design rules</h3><p>Colours are defined once as variables, in a warm light theme and a warm medium-dark one that avoids pure black. Text contrast is checked by a test. The one entrance animation plays once and is skipped when the phone asks for reduced motion.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <p class="label">Timeline</p>
+    <h2>September to 28 October, in three steps</h2>
+    <ol class="timeline">
+      <li><b>September to early October 2026</b>The first versions: security fixes, Gmail reminders, a cache and a faster opening.</li>
+      <li><b>11 October</b>Versions 3.0.0 to 3.5.4 in one day: a calmer design, one-tap logging, PIN sign-in, automatic sign-in on the last digit, private reminders and in-app confirmation sheets.</li>
+      <li><b>20 and 28 October</b>A simpler home screen, a faster opening, the cycle summary, and a repository cleanup that found no secret or real data.</li>
+    </ol>
+  </section>
+
+  <section id="about">
+    <p class="label">About</p>
+    <h2>Who did what</h2>
+    <p>Product decisions, the rules and testing on a real phone are mine. The code was written together with Claude.</p>
+    <p class="note">All screens on this page use invented dates and entries. The app is made for one person and holds private health data, so it is not public. The interface is in Turkish, and the labels are explained next to each screen. The page carries no medical advice.</p>
+  </section>
+
+</main>
+</body>
+</html>
